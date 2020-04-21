@@ -1,66 +1,48 @@
 import socket
 import threading
-class server:
-   def _init_():
-    s.serv = socket.socket()
-    #socket created
-    
-    s.serv.bind('localhost',8500)
 
-    s.serv.listen(3)
-    s.c, addr = s.serv.accept()
-    
-    print("Connected to" ,addr)
-    
-    s.t1 = threading.Thread(target = s.send)
-    s.t2 = threading.Thread(target= s.rec)
+class Server:
 
-    s.t2.start()
-    s.t2.join()
-    s.t1.join()
-    
-    s.serv.close()
+    def __init__(self, s_port):
+        self.s_port = s_port
+        self.sock = socket.socket()
+        self.sock.bind(('localhost', self.s_port))
+        self.sock.listen(5)
 
-   def rec(s):
-       
-       s.t1.start()
+        self.s, addr = self.sock.accept()
 
-       while True:
-          message = s.t2.recv(1024).decode()
-       
-          print("Client :",message)
+        print("Connection from:", addr[0], addr[1])
+        print("Exit! to end connection")
 
-          if message == "Exit":
-            print("Connection to server is lost")
-            s.serv.close()
-            break
-   def send(s):
+        self.t1 = threading.Thread(target = self.reciever)
+        self.t2 = threading.Thread(target = self.sender)
 
-       while s.t2.isalive():
-        message = input()
-       
-        s.t1.send(message.encode())
+        self.t1.start()
+        self.t1.join()
+        self.t2.join()
 
-        if msg == "Exit":
-            s.serv.close()
-            break
- Ss = server()  
+        self.sock.close()
+
+    def reciever(self):
+        self.t2.start()
+
+        while self.t2.is_alive():
+            msg = self.s.recv(1024).decode()
+            print("Client:", msg)
+
+            if msg == "Exit!":
+                self.s.close()
+                break
+
+    def sender(self):
+        while self.t1.is_alive():
+            msg = input()
+            self.s.send(msg.encode())
+
+            if msg == "Exit!":
+                self.s.close()
+                break
 
 
-
-       
-
-
-
-
-
-
-         
-
-
- 
-
-    
-
-    
-
+port = int(input("Enter port to be used: "))
+serv = Server(port)
